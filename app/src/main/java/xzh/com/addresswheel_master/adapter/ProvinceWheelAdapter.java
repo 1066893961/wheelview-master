@@ -17,22 +17,21 @@ package xzh.com.addresswheel_master.adapter;
 
 import android.content.Context;
 
-
 import java.util.List;
 
 import xzh.com.addresswheel_master.base.BaseWheelAdapter;
-import xzh.com.addresswheel_master.model.AddressDtailsEntity;
+import xzh.com.addresswheel_master.model.AddressModel;
 
-public class ProvinceWheelAdapter extends BaseWheelAdapter<AddressDtailsEntity.ProvinceEntity> {
-	public ProvinceWheelAdapter(Context context, List<AddressDtailsEntity.ProvinceEntity> list) {
+public class ProvinceWheelAdapter extends BaseWheelAdapter<AddressModel.ProvinceEntity> {
+	public ProvinceWheelAdapter(Context context, List<AddressModel.ProvinceEntity> list) {
 		super(context,list);
 	}
 
 	@Override
 	protected CharSequence getItemText(int index) {
-		AddressDtailsEntity.ProvinceEntity data = getItemData(index);
+		AddressModel.ProvinceEntity data = getItemData(index);
 		if(data != null){
-			return data.Name;
+			return data.getProvinceName();
 		}
 		return null;
 	}

@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
-import android.widget.TextView;
 
 import java.util.List;
 
@@ -19,9 +18,7 @@ import xzh.com.addresswheel_master.R;
 import xzh.com.addresswheel_master.adapter.AreaWheelAdapter;
 import xzh.com.addresswheel_master.adapter.CityWheelAdapter;
 import xzh.com.addresswheel_master.adapter.ProvinceWheelAdapter;
-import xzh.com.addresswheel_master.model.AddressDtailsEntity;
-import xzh.com.addresswheel_master.model.AddressDtailsEntity.ProvinceEntity;
-import xzh.com.addresswheel_master.model.AddressDtailsEntity.ProvinceEntity.CityEntity;
+import xzh.com.addresswheel_master.model.AddressModel;
 import xzh.com.addresswheel_master.utils.Utils;
 import xzh.com.addresswheel_master.view.listener.OnAddressChangeListener;
 import xzh.com.addresswheel_master.view.wheelview.MyOnWheelChangedListener;
@@ -42,8 +39,10 @@ public class ChooseAddressWheel implements MyOnWheelChangedListener {
     private PopupWindow popupWindow = null;
     private WindowManager.LayoutParams layoutParams = null;
     private LayoutInflater layoutInflater = null;
-
-    private List<AddressDtailsEntity.ProvinceEntity> province = null;
+    private AddressModel.ProvinceEntity provinceEntity = new AddressModel.ProvinceEntity();
+    private AddressModel.ProvinceEntity.CityListBean cityEntity = new AddressModel.ProvinceEntity.CityListBean();
+    private AddressModel.ProvinceEntity.CityListBean.AreaListBean areaEntity = new AddressModel.ProvinceEntity.CityListBean.AreaListBean();
+    private List<AddressModel.ProvinceEntity> province = null;
 
     private OnAddressChangeListener onAddressChangeListener = null;
 
@@ -80,6 +79,7 @@ public class ChooseAddressWheel implements MyOnWheelChangedListener {
         popupWindow.setOutsideTouchable(false);
         popupWindow.setFocusable(true);
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
             public void onDismiss() {
                 layoutParams.alpha = 1.0f;
                 context.getWindow().setAttributes(layoutParams);
@@ -106,7 +106,7 @@ public class ChooseAddressWheel implements MyOnWheelChangedListener {
 
     private void updateCitiy() {
         int index = provinceWheel.getCurrentItem();
-        List<AddressDtailsEntity.ProvinceEntity.CityEntity> citys = province.get(index).City;
+        List<AddressModel.ProvinceEntity.CityListBean> citys = province.get(index).getCityList();
         if (citys != null && citys.size() > 0) {
             cityWheel.setViewAdapter(new CityWheelAdapter(context, citys));
             cityWheel.setCurrentItem(0);
@@ -116,9 +116,9 @@ public class ChooseAddressWheel implements MyOnWheelChangedListener {
 
     private void updateDistrict() {
         int provinceIndex = provinceWheel.getCurrentItem();
-        List<ProvinceEntity.CityEntity> citys = province.get(provinceIndex).City;
+        List<AddressModel.ProvinceEntity.CityListBean> citys = province.get(provinceIndex).getCityList();
         int cityIndex = cityWheel.getCurrentItem();
-        List<ProvinceEntity.AreaEntity> districts = citys.get(cityIndex).Area;
+        List<AddressModel.ProvinceEntity.CityListBean.AreaListBean> districts = citys.get(cityIndex).getAreaList();
         if (districts != null && districts.size() > 0) {
             districtWheel.setViewAdapter(new AreaWheelAdapter(context, districts));
             districtWheel.setCurrentItem(0);
@@ -132,29 +132,35 @@ public class ChooseAddressWheel implements MyOnWheelChangedListener {
         popupWindow.showAtLocation(v, Gravity.BOTTOM, 0, 0);
     }
 
-    public void setProvince(List<ProvinceEntity> province) {
+    public void setProvince(List<AddressModel.ProvinceEntity> province) {
         this.province = province;
         bindData();
     }
 
     public void defaultValue(String provinceStr, String city, String arae) {
-        if (TextUtils.isEmpty(provinceStr)) return;
+        if (TextUtils.isEmpty(provinceStr)) {
+            return;
+        }
         for (int i = 0; i < province.size(); i++) {
-            ProvinceEntity provinces = province.get(i);
-            if (provinces != null && provinces.Name.equalsIgnoreCase(provinceStr)) {
+            AddressModel.ProvinceEntity provinces = province.get(i);
+            if (provinces != null && provinces.getProvinceName().equalsIgnoreCase(provinceStr)) {
                 provinceWheel.setCurrentItem(i);
-                if (TextUtils.isEmpty(city)) return;
-                List<ProvinceEntity.CityEntity> citys = provinces.City;
+                if (TextUtils.isEmpty(city)) {
+                    return;
+                }
+                List<AddressModel.ProvinceEntity.CityListBean> citys = provinces.getCityList();
                 for (int j = 0; j < citys.size(); j++) {
-                    ProvinceEntity.CityEntity cityEntity = citys.get(j);
-                    if (cityEntity != null && cityEntity.Name.equalsIgnoreCase(city)) {
+                    AddressModel.ProvinceEntity.CityListBean cityEntity = citys.get(j);
+                    if (cityEntity != null && cityEntity.getCityName().equalsIgnoreCase(city)) {
                         cityWheel.setViewAdapter(new CityWheelAdapter(context, citys));
                         cityWheel.setCurrentItem(j);
-                        if (TextUtils.isEmpty(arae)) return;
-                        List<ProvinceEntity.AreaEntity> areas = cityEntity.Area;
+                        if (TextUtils.isEmpty(arae)) {
+                            return;
+                        }
+                        List<AddressModel.ProvinceEntity.CityListBean.AreaListBean> areas = cityEntity.getAreaList();
                         for (int k = 0; k < areas.size(); k++) {
-                            ProvinceEntity.AreaEntity areaEntity = areas.get(k);
-                            if (areaEntity != null && areaEntity.Name.equalsIgnoreCase(arae)) {
+                            AddressModel.ProvinceEntity.CityListBean.AreaListBean areaEntity = areas.get(k);
+                            if (areaEntity != null && areaEntity.getAreaName().equalsIgnoreCase(arae)) {
                                 districtWheel.setViewAdapter(new AreaWheelAdapter(context, areas));
                                 districtWheel.setCurrentItem(k);
                             }
@@ -174,25 +180,25 @@ public class ChooseAddressWheel implements MyOnWheelChangedListener {
 
             String provinceName = null, cityName = null, areaName = null;
 
-            List<ProvinceEntity.CityEntity> citys = null;
+            List<AddressModel.ProvinceEntity.CityListBean> citys = null;
             if (province != null && province.size() > provinceIndex) {
-                ProvinceEntity provinceEntity = province.get(provinceIndex);
-                citys = provinceEntity.City;
-                provinceName = provinceEntity.Name;
+               provinceEntity = province.get(provinceIndex);
+                citys = provinceEntity.getCityList();
+                provinceName = provinceEntity.getProvinceName();
             }
-            List<ProvinceEntity.AreaEntity> districts = null;
+            List<AddressModel.ProvinceEntity.CityListBean.AreaListBean> districts = null;
             if (citys != null && citys.size() > cityIndex) {
-                ProvinceEntity.CityEntity cityEntity = citys.get(cityIndex);
-                districts = cityEntity.Area;
-                cityName = cityEntity.Name;
+                cityEntity = citys.get(cityIndex);
+                districts = cityEntity.getAreaList();
+                cityName = cityEntity.getCityName();
             }
 
             if (districts != null && districts.size() > areaIndex) {
-                ProvinceEntity.AreaEntity areaEntity = districts.get(areaIndex);
-                areaName = areaEntity.Name;
+                 areaEntity = districts.get(areaIndex);
+                areaName = areaEntity.getAreaName();
             }
 
-            onAddressChangeListener.onAddressChange(provinceName, cityName, areaName);
+            onAddressChangeListener.onAddressChange(provinceEntity, cityEntity, areaEntity);
         }
         cancel();
     }

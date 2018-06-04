@@ -22,17 +22,18 @@ import java.util.List;
 
 import xzh.com.addresswheel_master.base.BaseWheelAdapter;
 import xzh.com.addresswheel_master.model.AddressDtailsEntity.ProvinceEntity;
+import xzh.com.addresswheel_master.model.AddressModel;
 
-public class AreaWheelAdapter extends BaseWheelAdapter<ProvinceEntity.AreaEntity> {
-    public AreaWheelAdapter(Context context, List<ProvinceEntity.AreaEntity> list) {
+public class AreaWheelAdapter extends BaseWheelAdapter<AddressModel.ProvinceEntity.CityListBean.AreaListBean> {
+    public AreaWheelAdapter(Context context, List<AddressModel.ProvinceEntity.CityListBean.AreaListBean> list) {
         super(context,list);
     }
 
     @Override
     protected CharSequence getItemText(int index) {
-        ProvinceEntity.AreaEntity data = getItemData(index);
+        AddressModel.ProvinceEntity.CityListBean.AreaListBean data = getItemData(index);
         if (data != null) {
-            return data.Name;
+            return data.getAreaName();
         }
         return null;
     }
